@@ -1,0 +1,32 @@
+config:
+  target: "http://api.weatherstack.com"
+  phases:
+    - duration: 60              
+      arrivalRate: 5             
+  payload:
+    path: "data/payload.csv"    
+    fields:
+      - "city"                  
+      - "units"                 
+
+scenarios:
+  - flow:
+      #GET
+      - get:
+          url: "/current?access_key=YOUR_API_KEY&query={{ city }}&units={{ units }}"
+          validate:
+            - statusCode: 200          
+            - response_time.p95: < 500  
+            - response_time.mean: < 300  
+            - body.current: exists()      
+
+      #POST
+      - post:
+          url: "/some/endpoint"  
+          json:
+            city: "{{ city }}"     
+            unit: "{{ units }}"     
+          validate:
+            - statusCode: 201        
+            - body.success: true
+
